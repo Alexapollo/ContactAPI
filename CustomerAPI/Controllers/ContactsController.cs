@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CustomerAPI.Models;
 using CustomerAPI.PostgresComponents;
+using CustomerAPI.Services;
 
 namespace CustomerAPI.Controllers
 {
@@ -15,10 +16,12 @@ namespace CustomerAPI.Controllers
     public class ContactsController : ControllerBase
     {
         private readonly MyPostgresContext _context;
+        private readonly IPagination _pagination;
 
-        public ContactsController(MyPostgresContext context)
+        public ContactsController(MyPostgresContext context, IPagination pagination)
         {
             _context = context;
+            _pagination = pagination;
         }
 
         // GET: api/Contacts
@@ -26,6 +29,20 @@ namespace CustomerAPI.Controllers
         public IEnumerable<Contact> GetContacts()
         {
             return _context.Contacts;
+        }
+
+        [HttpGet]
+        [Route("paging")]
+        public PagedResultResponse<Contact> GetContactPage([FromQuery] int page)
+        {
+            var results = _pagination.PagingContacts(page);
+            int totalCount = _pagination.CalculateTotalPages();
+
+            return new PagedResultResponse<Contact>
+            {
+                Results = results,
+                TotalPages = totalCount
+            };
         }
 
         // GET: api/Contacts/5
@@ -122,5 +139,6 @@ namespace CustomerAPI.Controllers
         {
             return _context.Contacts.Any(e => e.ContactId == id);
         }
+
     }
 }

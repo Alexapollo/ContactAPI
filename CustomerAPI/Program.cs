@@ -18,7 +18,16 @@ namespace CustomerAPI
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+           WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+            .UseKestrel((context, options) =>
+            {
+                var port = Environment.GetEnvironmentVariable("PORT");
+                if (!string.IsNullOrEmpty(port))
+                {
+                    options.ListenAnyIP(int.Parse(port));
+                }
+            }
+        );
     }
 }
